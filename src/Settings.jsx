@@ -5,6 +5,7 @@ import {
   Youtube, Coffee, AlertTriangle, Check, Wrench, Languages, Bell, Shield, Settings as SettingsIcon,
   Search, Cpu, Info
 } from 'lucide-react';
+import { ask, message } from '@tauri-apps/plugin-dialog';
 import { enable, disable, isEnabled } from '@tauri-apps/plugin-autostart';
 import { Command } from '@tauri-apps/plugin-shell';
 import { openUrl } from '@tauri-apps/plugin-opener';
@@ -354,7 +355,7 @@ const Settings = ({ onBack, config, updateConfig, dnsLatencies, setDnsLatencies 
                   }}
                 />
               </div>
-              
+
               <div style={{ padding: '0 16px 16px' }}>
                 <button
                   className="v2-action-btn"
@@ -371,10 +372,10 @@ const Settings = ({ onBack, config, updateConfig, dnsLatencies, setDnsLatencies 
                   {sortedProviders.filter(p => p.id !== 'system').map((provider, idx) => {
                     const isSelected = config.selectedDns === provider.id;
                     const latency = latencies[provider.id];
-                    
+
                     return (
                       <React.Fragment key={provider.id}>
-                        <div 
+                        <div
                           className={`v2-dns-item ${isSelected ? 'active' : ''} ${config.dnsMode === 'auto' ? 'readonly' : ''}`}
                           onClick={() => config.dnsMode !== 'auto' && updateConfig('selectedDns', provider.id)}
                         >
@@ -438,35 +439,35 @@ const Settings = ({ onBack, config, updateConfig, dnsLatencies, setDnsLatencies 
         <div className="v2-section-title">Uygulama Filtreleme</div>
         <div className="v2-card">
           <div style={{ padding: '16px' }}>
-             <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: '12px' }}>
-               Aşağıdaki servisleri seçerek sadece bu servislerin Xzual üzerinden geçmesini sağlayabilirsiniz.
-             </p>
-             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-               {BYPASS_PROFILES.map(profile => {
-                 const isEnabled = (config.whitelist || "").includes(profile.domains);
-                 return (
-                   <div key={profile.id} className="v2-item" style={{ padding: '8px 0' }}>
-                     <div className="v2-item-text">
-                       <h3 style={{ fontSize: '0.85rem' }}>{profile.name}</h3>
-                     </div>
-                     <Toggle 
-                        checked={isEnabled} 
-                        onChange={(v) => {
-                          let currentList = config.whitelist || "";
-                          if (v) {
-                            if (!currentList.includes(profile.domains)) {
-                              currentList = currentList ? `${currentList},${profile.domains}` : profile.domains;
-                            }
-                          } else {
-                            currentList = currentList.replace(profile.domains, "").replace(",,", ",").replace(/^,|,$/, "");
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: '12px' }}>
+              Aşağıdaki servisleri seçerek sadece bu servislerin Xzual üzerinden geçmesini sağlayabilirsiniz.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {BYPASS_PROFILES.map(profile => {
+                const isEnabled = (config.whitelist || "").includes(profile.domains);
+                return (
+                  <div key={profile.id} className="v2-item" style={{ padding: '8px 0' }}>
+                    <div className="v2-item-text">
+                      <h3 style={{ fontSize: '0.85rem' }}>{profile.name}</h3>
+                    </div>
+                    <Toggle
+                      checked={isEnabled}
+                      onChange={(v) => {
+                        let currentList = config.whitelist || "";
+                        if (v) {
+                          if (!currentList.includes(profile.domains)) {
+                            currentList = currentList ? `${currentList},${profile.domains}` : profile.domains;
                           }
-                          updateConfig('whitelist', currentList);
-                        }} 
-                     />
-                   </div>
-                 );
-               })}
-             </div>
+                        } else {
+                          currentList = currentList.replace(profile.domains, "").replace(",,", ",").replace(/^,|,$/, "");
+                        }
+                        updateConfig('whitelist', currentList);
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -563,31 +564,37 @@ const Settings = ({ onBack, config, updateConfig, dnsLatencies, setDnsLatencies 
               <h3>{t.appName} v1.0.0</h3>
               <p>Built with Tauri & Rust</p>
             </div>
-            <button 
-              className="v2-action-btn" 
+            <button
+              className="v2-action-btn"
               style={{ width: 'auto', padding: '6px 12px', fontSize: '0.75rem' }}
               onClick={async () => {
                 setFixStatus('checking');
                 try {
                   // GitHub üzerinden en güncel sürümü kontrol et
-                  const response = await fetch('https://raw.githubusercontent.com/MuratGuelr/XzualDPI-Windows/main/package.json');
-                  if (!response.ok) throw new Error("Bağlantı hatası");
+                  const response = await fetch('https://raw.githubusercontent.com/Xzual/XzualDPI-Windows/main/package.json');
+                  if (!response.ok) throw new Error("Dosya bulunamadı");
                   
                   const data = await response.json();
                   const latestVersion = data.version;
-                  const currentVersion = "1.0.0"; // package.json'daki sürüm
+                  const currentVersion = "1.0.0";
 
                   if (latestVersion !== currentVersion) {
-                    const confirmUpdate = window.confirm(`Yeni bir sürüm mevcut: v${latestVersion}\nŞimdi indirmek için GitHub sayfasını açmak ister misiniz?`);
+                    const confirmUpdate = await ask(`Yeni bir sürüm mevcut: v${latestVersion}\n\nGüncelleme sayfasını açmak ister misiniz?`, {
+                      title: 'XzualDPI Güncelleme',
+                      kind: 'info',
+                      okLabel: 'Evet',
+                      cancelLabel: 'Daha Sonra'
+                    });
+                    
                     if (confirmUpdate) {
-                      openUrl("https://github.com/MuratGuelr/XzualDPI-Windows/releases");
+                      await openUrl("https://github.com/Xzual/XzualDPI-Windows-main/releases");
                     }
                   } else {
-                    alert("XzualDPI şu an en güncel sürümde (v1.0.0).");
+                    await message("XzualDPI şu an en güncel sürümde (v1.0.0).", { title: 'XzualDPI', kind: 'info' });
                   }
                 } catch (e) {
-                  console.error("Güncelleme kontrolü hatası:", e);
-                  alert("Güncelleme kontrolü sırasında bir hata oluştu. Lütfen daha sonra tekrar deneyin.");
+                  console.error("Güncelleme hatası:", e);
+                  await message("Güncelleme kontrolü başarısız oldu. Lütfen internetinizi veya depo adresini kontrol edin.", { title: 'Hata', kind: 'error' });
                 } finally {
                   setFixStatus('idle');
                 }
