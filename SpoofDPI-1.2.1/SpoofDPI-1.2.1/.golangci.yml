@@ -1,0 +1,34 @@
+version: "2"
+
+linters:
+  default: none
+  disable:
+    - depguard
+  enable:
+    - exhaustruct
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+    - asciicheck
+    - goconst
+    # - revive
+  settings:
+    exhaustruct:
+      allow-empty: true
+      exclude: 
+       - '.*'
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+    - golines
+    - swaggo
+  settings:
+    golines:
+      max-len: 88
+      tab-len: 2
+

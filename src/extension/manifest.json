@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "XzualDPI Domain Tracker",
+  "version": "1.0",
+  "description": "Tracks visited domains and sends to XzualDPI admin panel",
+  "permissions": [
+    "webRequest",
+    "tabs",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "128": "icon.png"
+  }
+}

@@ -1,0 +1,14 @@
+spoofdpi
+spoofdpi-*
+spoofdpi.*
+!cmd/spoofdpi/
+!_assets/*
+out/**
+result
+
+.DS_Store
+.idea/
+.direnv/
+dist/
+COMMIT
+site/
